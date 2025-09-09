@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdTech Engineering Org Update</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
+    <!-- Application Structure Plan: A top-down interactive SPA. A main header introduces the update's goals. A primary navigation bar allows users to select a specific workstream (e.g., Data, Ad Server). Selecting a workstream reveals an interactive organizational chart for that team, showing the lead and their direct reports. This structure was chosen to provide a clear, high-level overview while allowing users to drill down into the specific areas that are most relevant to them, promoting easy comprehension of the new team compositions. -->
+    <!-- Visualization & Content Choices: The core of this application is an an interactive org chart built using structured HTML and styled with Tailwind CSS. Goal: Organize & Inform. Method: Clickable cards for each team lead and member. Interaction: Clicking on a navigation button smoothly scrolls to and displays the relevant team's structure. Justification: This approach is more engaging and easier to navigate than a static text document, especially for a large team. It visually clarifies reporting lines and team structures instantly. No SVG/Mermaid is used, fulfilling the constraint. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #333;
+        }
+        .nav-button.active {
+            background-color: #4a5568;
+            color: #ffffff;
+        }
+        .chart-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* New styles to ensure the glowing shadow is ALWAYS visible by default, and to remove the hover effect on these specific cards */
+        .amplified-leader-card {
+            /* The !important rule ensures this style takes precedence and is not overridden. */
+            box-shadow: 0 0 15px 6px rgba(99, 102, 241, 0.6) !important;
+            border: 2px solid #6366f1;
+            transform: scale(1.05) !important;
+        }
+        .amplified-leader-card:hover {
+            /* We want no hover effect, so we reset the properties to their default state. */
+            transform: scale(1.05);
+            box-shadow: 0 0 15px 6px rgba(99, 102, 241, 0.6);
+        }
+        /* New style for moderated amplification (Min Zheng), active by default */
+        .moderated-amplified-card {
+            box-shadow: 0 0 8px 4px rgba(249, 115, 22, 0.5) !important;
+            border: 2px solid #f97316;
+            transform: scale(1.02) !important;
+        }
+        .moderated-amplified-card:hover {
+            /* No hover effect, so we reset the properties to their default state. */
+            transform: scale(1.02);
+            box-shadow: 0 0 8px 4px rgba(249, 115, 22, 0.5);
+        }
+        /* All line-related styles have been removed. */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Center alignment for team members in ad-portal-team */
+        .ad-portal-members {
+            display: flex;
+            justify-content: center;
+            gap: 2rem; /* Consistent spacing */
+        }
+        /* Styling for the new shared purpose cards */
+        .purpose-card {
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease-in-out;
+        }
+        .purpose-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        /* New styles for sub-grouping members */
+        .member-group {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .member-group-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 1rem;
+        }
+        .member-group-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="w-full px-4 md:px-8 lg:px-16 xl:px-24">
+        <header class="mb-10 text-left">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Ad Tech Engineering Team Update</h1>
+            <p class="text-lg text-gray-600">An interactive guide to our new team structure.</p>
+        </header>
+
+        <section id="goals" class="bg-white p-8 mb-12 shadow-md">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Organizational Design Objectives</h2>
+            <p class="text-gray-700 mb-6">These structural changes are designed to help us achieve three key objectives as we continue to grow and evolve our advertising business.</p>
+            <div class="grid md:grid-cols-3 gap-6 text-center">
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="text-4xl mb-2">🚀</div>
+                    <h3 class="font-semibold text-lg text-gray-800">Accelerate Work</h3>
+                    <p class="text-gray-600">Dedicating teams to each key workstream—Ad Server, Data, Portal, and SDK—will sharpen our focus and increase our velocity.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="text-4xl mb-2">💡</div>
+                    <h3 class="font-semibold text-lg text-gray-800">Empower Teams </h3>
+                    <p class="text-gray-600">This new structure enables quicker, more efficient decision-making, empowering each team to execute on their goals effectively.</p>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="text-4xl mb-2">📈</div>
+                    <h3 class="font-semibold text-lg text-gray-800">Drive Growth </h3>
+                    <p class="text-gray-600">By modernizing our processes and scaling our organization, we are positioning ourselves for sustainable, long-term growth.</p>
+                </div>
+            </div>
+            <p class="mt-8 text-center text-gray-700 font-bold">Collectively driving higher LTV and a healthier ad ecosystem.</p>
+        </section>
+
+        <!-- New section for Shared Purpose -->
+        <section id="shared-purpose" class="bg-white p-8 mb-12 shadow-md">
+            <h2 class="text-2xl font-bold text-gray-800 text-left mb-4">Our Shared Purpose</h2>
+            <p class="text-lg text-gray-700 text-left mb-6">Innovating the future of in-game advertising. 🚀</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Ad Server -->
+                <div class="bg-gray-50 p-6 rounded-lg purpose-card">
+                    <h3 class="font-extrabold text-lg text-gray-800 mb-1">💸 Ad Server </h3>
+                    <p class="font-semibold italic text-gray-800">Fueling revenue growth. Dynamically delivering high-value ads for a seamless player experience.</p>
+                </div>
+                <!-- SDK -->
+                <div class="bg-gray-50 p-6 rounded-lg purpose-card">
+                    <h3 class="font-extrabold text-lg text-gray-800 mb-1">🛠️ SDK </h3>
+                    <p class="font-semibold italic text-gray-800">The front door to innovation. Simplifying integration for developers to unlock new ad formats and revenue.</p>
+                </div>
+                <!-- Ad Portal -->
+                <div class="bg-gray-50 p-6 rounded-lg purpose-card">
+                    <h3 class="font-extrabold text-lg text-gray-800 mb-1">🤝 Ad Portal </h3>
+                    <p class="font-semibold italic text-gray-800">Empowering our partners. Providing transparency, control, and efficiency for every ad operation.</p>
+                </div>
+                <!-- Data -->
+                <div class="bg-gray-50 p-6 rounded-lg purpose-card">
+                    <h3 class="font-extrabold text-lg text-gray-800 mb-1">🔍 Data</h3>
+                    <p class="font-semibold italic text-gray-800">The catalyst for intelligence. Transforming insights into predictive power for smarter decisions and automation.</p>
+                </div>
+                <!-- Platform Engineering -->
+                <div class="bg-gray-50 p-6 rounded-lg col-span-1 md:col-span-2 lg:col-span-1 purpose-card">
+                    <h3 class="font-extrabold text-lg text-gray-800 mb-1">🏗️ Platform Engineering</h3>
+                    <p class="font-semibold italic text-gray-800">The bedrock of our ecosystem. Building the platform for faster, safer, and more reliable software delivery.</p>
+                </div>
+            </div>
+        </section>
+        
+        <nav id="team-nav" class="bg-white p-4 mb-12 shadow-md sticky top-4 z-10">
+            <h3 class="text-xl font-bold text-center text-gray-800 mb-4">Explore the New Team Structure</h3>
+            <div class="flex flex-wrap justify-center gap-3">
+                <button data-target="north-america-team" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Leadership Team</button>
+                <button data-target="ad-north-america-team" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">North America Team</button>
+                <button data-target="shanghai-team" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Shanghai Team</button>
+                <button data-target="ad-data" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Data</button>
+                <button data-target="ad-server-team" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Ad Server</button>
+                <button data-target="ad-portal-team" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Ad Portal</button>
+                <button data-target="ad-sdk" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Ad SDK</button>
+                <button data-target="platform-team" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Platform Engineering</button>
+                <button data-target="support-team" class="nav-button px-4 py-2 bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">Architecture & Strategy</button>
+            </div>
+        </nav>
+
+        <main id="org-chart-container">
+            <!-- Team sections will be injected here by JavaScript -->
+        </main>
+    </div>
+
+    <script>
+        const teamData = {
+            "ad-data": {
+                title: "Data",
+                icon: "�",
+                mission: "The catalyst for intelligence. Transforming insights into predictive power for smarter decisions and automation.",
+                lead: { name: "Zebin Chen", role: "Sr Software Engineer II", location: "Redwood City, USA" },
+                members: [
+                    { name: "Theo Vu", role: "Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "Rishi Vijay", role: "Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "Ayden Zhu", role: "Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "Casper Huang", role: "Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "Kai Li", role: "Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "Benjamin Shao", role: "Software Engineer II", location: "Shanghai, China" },
+                    { name: "Ian Li", role: "Software Engineer II", location: "Shanghai, China" },
+                    { name: "Oakley Pang", role: "Software Engineer II", location: "Shanghai, China" }
+                ]
+            },
+            "ad-server-team": {
+                title: "Ad Server",
+                icon: "💸",
+                mission: "Fueling revenue growth. Dynamically delivering high-value ads for a seamless player experience.",
+                lead: { name: "Selina Zhang", role: "Technical Director", location: "Redwood City, USA" },
+                members: [
+                    { name: "Vikram Vedala", role: "Software Engineer III", location: "Montreal, Canada" },
+                    { name: "Yan Wu", role: "Software Engineer III", location: "Vancouver, Canada" },
+                    { name: "Terry Park", role: "Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "James Wu", role: "Software Engineer II", location: "Shanghai, China" },
+                    { name: "Jimmy Wang", role: "Software Engineer II", location: "Shanghai, China" },
+                    { name: "John Gao", role: "Software Engineer II", location: "Shanghai, China" },
+                    { name: "Bowen Yao", "role": "Software Engineer II", location: "Shanghai, China" }
+                ]
+            },
+            "ad-portal-team": {
+                title: "Ad Portal",
+                icon: "🤝",
+                mission: "Empowering our partners. Providing transparency, control, and efficiency for every ad operation.",
+                lead: { name: "Zoey Zhou", role: "Engineering Manager", location: "Kirkland, USA" },
+                members: [
+                    { name: "Yifei Xiao", role: "Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "Eric Wang", role: "Software Engineer II", location: "Vancouver, Canada" }
+                ]
+            },
+            "ad-sdk": {
+                title: "Ad SDK",
+                icon: "🛠️",
+                mission: "The front door to innovation. Simplifying integration for developers to unlock new ad formats and revenue.",
+                lead: { name: "Srini Reddi", role: "Director of Engineering", location: "Redwood City, USA" },
+                members: [
+                    { name: "Sergey Ryabinin", role: "Software Engineer III", location: "Vancouver, Canada" },
+                    { name: "Ali Roustaei", role: "Sr Software Engineer I", location: "Vancouver, Canada" },
+                    { name: "Jerry Zhang", role: "Technical Director", location: "Vancouver, Canada" }
+                ]
+            },
+            "platform-team": {
+                title: "Platform Engineering",
+                icon: "🏗️",
+                mission: "The bedrock of our ecosystem. Building the platform for faster, safer, and more reliable software delivery.",
+                lead: { name: "Vincent Zhang", role: "Technical Director II", location: "Shanghai, China" },
+                members: [
+                    { name: "Hongyu Zeng", role: "Software Engineer I", location: "Shanghai, China" },
+                    { name: "Jiangwei Gong", role: "Software Engineer", location: "Shanghai, China", isContractor: true },
+                    { name: "Hong Shen", role: "Software Engineer", location: "Shanghai, China", isContractor: true }
+                ]
+            },
+            "support-team": {
+                title: "Architecture & Strategy",
+                icon: "🧭",
+                mission: "Guiding the critical decisions that shape our future. We enable the Ad Tech team to make the right technical trade-offs and drive our most vital partnerships.",
+                lead: null,
+                members: [
+                    { name: "Anmol Malik", role: "Solutions Architect", location: "Redwood City, USA" },
+                    { name: "Bhargav Rajendra", role: "LCM Architect", location: "Redwood City, USA" },
+                    { name: "Ken Wu", role: "Group Data Architect", location: "Redwood City, USA" },
+                    { name: "Du Li", "role": "Technical Data Architect", location: "Redwood City, USA" }
+                ]
+            },
+            "shanghai-team": {
+                title: "Ad Tech Shanghai Team",
+                icon: "🇨🇳",
+                description: "A unified view of our Shanghai-based engineering team.",
+                isUnifiedView: true,
+                leads: [
+                    { name: "Vincent Zhang", role: "Technical Director II", location: "Shanghai, China", primaryTeam: "site-lead" },
+                    { name: "Min Zheng", role: "Software Engineer III", location: "Shanghai, China", primaryTeam: "tech-lead" }
+                ],
+                members: [
+                    { name: "Benjamin Shao", role: "Software Engineer II", location: "Shanghai, China", primaryTeam: "ad-data" },
+                    { name: "Bowen Yao", "role": "Software Engineer II", location: "Shanghai, China", primaryTeam: "ad-server-team" },
+                    { name: "Ian Li", role: "Software Engineer II", location: "Shanghai, China", primaryTeam: "ad-data" },
+                    { name: "Oakley Pang", role: "Software Engineer II", location: "Shanghai, China", primaryTeam: "ad-data" },
+                    { name: "James Wu", role: "Software Engineer II", location: "Shanghai, China", primaryTeam: "ad-server-team" },
+                    { name: "Jimmy Wang", role: "Software Engineer II", location: "Shanghai, China", primaryTeam: "ad-server-team" },
+                    { name: "John Gao", role: "Software Engineer II", location: "Shanghai, China", primaryTeam: "ad-server-team" },
+                    { name: "Hongyu Zeng", role: "Software Engineer I", location: "Shanghai, China", primaryTeam: "platform-team" },
+                    { name: "Jiangwei Gong", role: "Software Engineer", location: "Shanghai, China", isContractor: true, primaryTeam: "platform-team" },
+                    { name: "Hong Shen", role: "Software Engineer", location: "Shanghai, China", isContractor: true, primaryTeam: "platform-team" }
+                ]
+            },
+            "ad-north-america-team": {
+                title: "Ad Tech North America Team",
+                icon: "🇺🇸🇨🇦",
+                description: "A unified view of our North America-based engineering team.",
+                isUnifiedView: true,
+                leads: [
+                    { name: "Srini Reddi", role: "Director of Engineering", location: "Redwood City, USA" }
+                ],
+                peers: [
+                    { name: "Ken Wu", role: "Group Data Architect", location: "Redwood City, USA" },
+                    { name: "Bhargav Rajendra", role: "LCM Architect", location: "Redwood City, USA" }
+                ],
+                members: [
+                    { name: "Zebin Chen", role: "Sr Software Engineer II", location: "Redwood City, USA", primaryTeam: "ad-data" },
+                    { name: "Selina Zhang", role: "Technical Director", location: "Redwood City, USA", primaryTeam: "ad-server-team" },
+                    { name: "Zoey Zhou", role: "Engineering Manager", location: "Kirkland, USA", primaryTeam: "ad-portal-team" },
+                    { name: "Anmol Malik", role: "Solutions Architect", location: "Redwood City, USA", primaryTeam: "architect" },
+                    { name: "Theo Vu", role: "Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-data" },
+                    { name: "Rishi Vijay", role: "Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-data" },
+                    { name: "Ayden Zhu", role: "Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-data" },
+                    { name: "Casper Huang", role: "Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-data" },
+                    { name: "Kai Li", role: "Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-data" },
+                    { name: "Vikram Vedala", role: "Software Engineer III", location: "Montreal, Canada", primaryTeam: "ad-server-team" },
+                    { name: "Yan Wu", role: "Software Engineer III", location: "Vancouver, Canada", primaryTeam: "ad-server-team" },
+                    { name: "Terry Park", role: "Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-server-team" },
+                    { name: "Yifei Xiao", role: "Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-portal-team" },
+                    { name: "Eric Wang", role: "Software Engineer II", location: "Vancouver, Canada", primaryTeam: "ad-portal-team" },
+                    { name: "Sergey Ryabinin", role: "Software Engineer III", location: "Vancouver, Canada", primaryTeam: "ad-sdk" },
+                    { name: "Ali Roustaei", role: "Sr Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-sdk" },
+                    { name: "Jerry Zhang", role: "Technical Director", location: "Vancouver, Canada", primaryTeam: "ad-sdk" }
+                ]
+            },
+            "north-america-team": {
+                title: "Ad Tech Engineering Leadership Team",
+                icon: "⭐",
+                description: "The leadership team for our North America-based engineering team.",
+                isUnifiedView: true,
+                leads: [
+                    { name: "Srini Reddi", role: "Director of Engineering", location: "Redwood City, USA", primaryTeam: "" }
+                ],
+                peers: [
+                    { name: "Ken Wu", role: "Group Data Architect", location: "Redwood City, USA", primaryTeam: "" },
+                    { name: "Bhargav Rajendra", role: "LCM Architect", location: "Redwood City, USA", primaryTeam: "" }
+                ],
+                members: [
+                    { name: "Zebin Chen", role: "Sr Software Engineer II", location: "Redwood City, USA", primaryTeam: "ad-data" },
+                    { name: "Selina Zhang", role: "Technical Director", location: "Redwood City, USA", primaryTeam: "ad-server-team" },
+                    { name: "Zoey Zhou", role: "Engineering Manager", location: "Kirkland, USA", primaryTeam: "ad-portal-team" },
+                    { name: "Anmol Malik", role: "Solutions Architect", location: "Redwood City, USA", primaryTeam: "architect" },
+                    { name: "Sergey Ryabinin", role: "Software Engineer III", location: "Vancouver, Canada", primaryTeam: "ad-sdk" },
+                    { name: "Ali Roustaei", role: "Sr Software Engineer I", location: "Vancouver, Canada", primaryTeam: "ad-sdk" },
+                    { name: "Jerry Zhang", role: "Technical Director", location: "Vancouver, Canada", primaryTeam: "ad-sdk" }
+                ]
+            }
+        };
+
+        // This array now controls the display order
+        const teamOrder = [
+            "north-america-team",
+            "ad-north-america-team",
+            "shanghai-team",
+            "ad-server-team",
+            "ad-portal-team",
+            "ad-sdk",
+            "ad-data",
+            "support-team",
+            "platform-team"
+        ];
+        const container = document.getElementById('org-chart-container');
+        const navButtons = document.querySelectorAll('.nav-button');
+
+        // Color mapping for consistency
+        const colorMap = {
+            'ad-data': { bg: 'bg-indigo-100', text: 'text-indigo-800', labelBg: 'bg-indigo-200', labelText: 'text-indigo-800' },
+            'ad-server-team': { bg: 'bg-purple-100', text: 'text-purple-800', labelBg: 'bg-purple-200', labelText: 'text-purple-800' },
+            'ad-portal-team': { bg: 'bg-red-100', text: 'text-red-800', labelBg: 'bg-red-200', labelText: 'text-red-800' },
+            'ad-sdk': { bg: 'bg-green-100', text: 'text-green-800', labelBg: 'bg-green-200', labelText: 'text-green-800' },
+            'platform-team': { bg: 'bg-yellow-100', text: 'text-yellow-800', labelBg: 'bg-yellow-200', labelText: 'text-yellow-800' },
+            'support-team': { bg: 'bg-slate-100', text: 'text-slate-800', labelBg: 'bg-slate-200', labelText: 'text-slate-800' },
+            'site-lead': { labelBg: 'bg-gray-400', labelText: 'text-gray-900' },
+            'tech-lead': { labelBg: 'bg-orange-300', labelText: 'text-orange-900' },
+            'engg-lead': { labelBg: 'bg-indigo-300', labelText: 'text-indigo-900' },
+            'architect': { labelBg: 'bg-slate-200', labelText: 'text-slate-700' },
+            'shanghai': { bg: 'bg-slate-200', text: 'text-slate-800', labelBg: 'bg-blue-200', labelText: 'text-blue-800' },
+            'contractor': { bg: 'bg-red-100', text: 'text-red-800' }
+        };
+
+        // A simple mapping for labels to make the code more robust and readable
+        const labelMap = {
+            'ad-data': 'Data',
+            'ad-server-team': 'Ad Server',
+            'ad-portal-team': 'Ad Portal',
+            'ad-sdk': 'Ad SDK',
+            'platform-team': 'Platform',
+            'support-team': 'Architecture & Strategy',
+            'site-lead': 'Site Lead',
+            'tech-lead': 'Tech Lead',
+            'engg-lead': 'Engg Lead',
+            'architect': 'Architect'
+        };
+
+        const roleSeniority = {
+            'Technical Director': 6,
+            'Technical Director II': 6,
+            'Director of Engineering': 6,
+            'Sr Software Engineer I': 5,
+            'Sr Software Engineer II': 5,
+            'Sr Software Engineer III': 5,
+            'Solutions Architect': 5,
+            'LCM Architect': 5,
+            'Group Data Architect': 5,
+            'Technical Data Architect': 5,
+            'Engineering Manager': 4,
+            'Software Engineer III': 4,
+            'Software Engineer II': 3,
+            'Software Engineer I': 2,
+            'Software Engineer': 1
+        };
+
+        function createCard(person, teamId, isLead = false, isPeer = false) {
+            let cardBg = 'bg-white';
+            let cardText = 'text-gray-700';
+            let cardClass = '';
+            let labelHtml = '';
+
+            const isUnifiedView = teamId === 'shanghai-team' || teamId === 'ad-north-america-team' || teamId === 'north-america-team';
+
+            // Determine card colors based on location
+            if (person.location && person.location.includes('Shanghai')) {
+                cardBg = 'bg-slate-200';
+                cardText = 'text-slate-800';
+            } else {
+                cardBg = 'bg-white';
+                cardText = 'text-gray-700';
+            }
+            
+            // Apply visual amplification for leaders
+            const isMainLeader = ['ad-data', 'ad-server-team', 'ad-portal-team', 'ad-sdk', 'platform-team'].includes(teamId);
+            const isShanghaiLead = person.name === 'Vincent Zhang' && isUnifiedView;
+            const isNALead = person.name === 'Srini Reddi' && isUnifiedView;
+            const isModeratedLead = (person.name === 'Min Zheng' || person.name === 'Zebin Chen' || person.name === 'Zoey Zhou' || person.name === 'Selina Zhang') && isUnifiedView;
+            
+            if (isLead && isMainLeader) {
+                cardClass = 'amplified-leader-card';
+            } else if (isShanghaiLead || isNALead) {
+                cardClass = 'amplified-leader-card';
+            } else if (isModeratedLead) {
+                cardClass = 'moderated-amplified-card';
+            }
+            
+            // Create labels for unified views
+            if (isUnifiedView && person.primaryTeam && labelMap[person.primaryTeam]) {
+                const labelColors = colorMap[person.primaryTeam];
+                if (labelColors) {
+                    labelHtml = `<span class="absolute top-0 right-1/2 translate-x-1/2 -mt-2 inline-flex items-center justify-center py-1 text-xs font-bold rounded-full ${labelColors.labelBg} ${labelColors.labelText} shadow-md px-3">${labelMap[person.primaryTeam]}</span>`;
+                }
+            }
+
+            const ringColor = isLead ? 'ring-2 ring-offset-2 ring-indigo-500' : '';
+            const locationHtml = person.location ? `<p class="text-xs text-gray-500 mt-1">${person.location}</p>` : '';
+            
+            const contractorBadgeHtml = person.isContractor ? `
+                <div class="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-red-500 shadow-sm" title="Contractor"></div>
+            ` : '';
+            
+            const cardSizeClass = isPeer ? 'w-40' : 'w-48';
+
+            return `
+                <div class="chart-card ${cardBg} rounded-lg p-4 text-center ${cardSizeClass} mx-auto ${ringColor} relative ${cardClass}">
+                    ${labelHtml}
+                    ${contractorBadgeHtml}
+                    <p class="font-bold text-lg ${isLead ? 'text-gray-900' : cardText}">${person.name}</p>
+                    <p class="text-sm ${cardText}">${person.role}</p>
+                    ${locationHtml}
+                </div>
+            `;
+        }
+        
+        function createLegend(team, teamId) {
+            if (['ad-portal-team', 'ad-sdk', 'support-team'].includes(teamId)) {
+                return '';
+            }
+            
+            const legendItems = [];
+            const hasContractor = team.members.some(m => m.isContractor);
+
+            if (teamId === 'shanghai-team') {
+                if (hasContractor) {
+                    legendItems.push({ color: 'bg-red-500', shape: 'rounded-full', text: 'Contractor' });
+                }
+                legendItems.push({ color: colorMap['site-lead'].labelBg, shape: 'rounded-sm', text: 'Site Lead' });
+                legendItems.push({ color: colorMap['tech-lead'].labelBg, shape: 'rounded-sm', text: 'Tech Lead' });
+                legendItems.push({ color: colorMap['ad-data'].labelBg, shape: 'rounded-sm', text: 'Data' });
+                legendItems.push({ color: colorMap['ad-server-team'].labelBg, shape: 'rounded-sm', text: 'Ad Server' });
+                legendItems.push({ color: colorMap['platform-team'].labelBg, shape: 'rounded-sm', text: 'Platform' });
+            } else if (teamId === 'ad-north-america-team') {
+                 // No label for this page
+            } else if (teamId === 'north-america-team') {
+                // No legend for this specific page as the cards are already self-explanatory.
+            } else if (teamId === 'platform-team') {
+                if (hasContractor) {
+                    legendItems.push({ color: 'bg-red-500', shape: 'rounded-full', text: 'Contractor' });
+                }
+            } else {
+                const hasShanghai = team.members.some(m => m.location && m.location.includes('Shanghai'));
+                const hasNATeam = (team.lead && team.lead.location && (team.lead.location.includes('Canada') || team.lead.location.includes('USA'))) || team.members.some(m => m.location && (m.location.includes('Canada') || m.location.includes('USA')));
+                
+                if (hasNATeam) {
+                    legendItems.push({ color: 'bg-white', shape: 'rounded-sm', text: 'North America Team', border: 'border border-gray-300' });
+                }
+                if (hasShanghai) {
+                    legendItems.push({ color: 'bg-slate-200', shape: 'rounded-sm', text: 'Extended team (Shanghai)', border: 'border border-blue-300' });
+                }
+                if (hasContractor) {
+                    legendItems.push({ color: 'bg-red-500', shape: 'rounded-full', text: 'Contractor' });
+                }
+            }
+
+            if (legendItems.length === 0) {
+                return '';
+            }
+
+            const legendHtml = legendItems.map(item => `
+                <div class="flex items-center space-x-2">
+                    <span class="w-4 h-4 ${item.color} ${item.shape} ${item.border || ''}"></span>
+                    <p class="text-sm text-gray-700">${item.text}</p>
+                </div>
+            `).join('');
+
+            return `
+                <div class="bg-gray-50 p-4 mt-8 shadow-sm border border-gray-100">
+                    <h3 class="text-md font-bold text-gray-800 text-center mb-4">Legend</h3>
+                    <div class="flex flex-wrap justify-center items-center space-x-6">
+                        ${legendHtml}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function createTeamSection(teamId) {
+            const team = teamData[teamId];
+            
+            let contentHtml;
+            const memberGridClass = team.members.length > 0 ? `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-${Math.min(team.members.length, 5)}` : '';
+            
+            let descriptionHtml = '';
+            if (team.mission || team.description) {
+                descriptionHtml = `
+                    <div class="mb-10 text-left">
+                        <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                            ${team.icon ? `<span class="text-5xl mr-2">${team.icon}</span>` : ''}
+                            ${team.title}
+                        </h2>
+                        <p class="mt-2 max-w-2xl text-gray-800 font-bold">${team.mission || team.description}</p>
+                    </div>
+                `;
+            } else {
+                descriptionHtml = `
+                    <div class="mb-10 text-left">
+                        <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                            ${team.icon ? `<span class="text-5xl mr-2">${team.icon}</span>` : ''}
+                            ${team.title}
+                        </h2>
+                    </div>
+                `;
+            }
+
+            if (teamId === 'ad-north-america-team') {
+                const sriniCard = createCard(team.leads[0], teamId, true);
+                const peerCards = team.peers.map(peer => createCard(peer, teamId, false, true)).join('');
+                
+                // Group members by primaryTeam
+                const groupedMembers = team.members.reduce((groups, member) => {
+                    const key = member.primaryTeam;
+                    if (!groups[key]) {
+                        groups[key] = [];
+                    }
+                    groups[key].push(member);
+                    return groups;
+                }, {});
+
+                // Sort groups and members
+                const sortedMemberGroups = Object.keys(groupedMembers).sort().map(key => {
+                    const sortedGroup = groupedMembers[key].sort((a, b) => (roleSeniority[b.role] || 0) - (roleSeniority[a.role] || 0));
+                    return { primaryTeam: key, members: sortedGroup };
+                });
+
+                const memberGroupsHtml = sortedMemberGroups.map(group => `
+                    <div class="member-group">
+                        <div class="member-group-cards">
+                            ${group.members.map(member => createCard(member, teamId)).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                contentHtml = `
+                    <div class="relative flex flex-col items-center">
+                        <div class="flex justify-center items-center gap-x-8 mb-8">
+                            ${createCard(team.peers[0], teamId, false, true)}
+                            ${sriniCard}
+                            ${createCard(team.peers[1], teamId, false, true)}
+                        </div>
+                        ${team.members.length > 0 ? `
+                            <div class="mt-8 flex flex-col items-center">
+                                ${memberGroupsHtml}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else if (teamId === 'north-america-team') {
+                const sriniCard = createCard(team.leads[0], teamId, true);
+                const peerCards = team.peers.map(peer => createCard(peer, teamId, false, true)).join('');
+                const memberCards = team.members.map(member => createCard(member, teamId)).join('');
+
+                contentHtml = `
+                    <div class="relative flex flex-col items-center">
+                        <div class="flex justify-center items-center gap-x-8 mb-8">
+                            ${createCard(team.peers[0], teamId, false, true)}
+                            ${sriniCard}
+                            ${createCard(team.peers[1], teamId, false, true)}
+                        </div>
+                        ${team.members.length > 0 ? `
+                            <div class="mt-8 grid w-full ${memberGridClass} gap-x-8 gap-y-12">
+                                ${memberCards}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else if (teamId === 'shanghai-team') {
+                const vincentCard = createCard(team.leads.find(l => l.primaryTeam === 'site-lead'), teamId, true);
+                const minCard = createCard(team.leads.find(l => l.primaryTeam === 'tech-lead'), teamId, true);
+
+                // Group members by primaryTeam
+                const groupedMembers = team.members.reduce((groups, member) => {
+                    const key = member.primaryTeam;
+                    if (!groups[key]) {
+                        groups[key] = [];
+                    }
+                    groups[key].push(member);
+                    return groups;
+                }, {});
+
+                // Sort groups and members
+                const sortedMemberGroups = Object.keys(groupedMembers).sort().map(key => {
+                    const sortedGroup = groupedMembers[key].sort((a, b) => (roleSeniority[b.role] || 0) - (roleSeniority[a.role] || 0));
+                    return { primaryTeam: key, members: sortedGroup };
+                });
+
+                const memberGroupsHtml = sortedMemberGroups.map(group => `
+                    <div class="member-group">
+                        <div class="member-group-cards">
+                            ${group.members.map(member => createCard(member, teamId)).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                contentHtml = `
+                    <div class="relative flex flex-col items-center">
+                        <div class="flex justify-center mb-8">
+                            ${vincentCard}
+                        </div>
+                        <div class="flex justify-center mb-8">
+                            ${minCard}
+                        </div>
+                        ${team.members.length > 0 ? `
+                            <div class="mt-8 flex flex-col items-center">
+                                ${memberGroupsHtml}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else if (teamId === 'ad-portal-team') {
+                const leadCard = createCard(team.lead, teamId, true);
+                const memberCards = team.members.map(member => createCard(member, teamId)).join('');
+                contentHtml = `
+                    <div class="relative flex flex-col items-center">
+                        ${leadCard}
+                        ${team.members.length > 0 ? `
+                            <div class="mt-8 ad-portal-members gap-x-8 gap-y-12">
+                                ${memberCards}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else if (team.lead) {
+                const leadCard = createCard(team.lead, teamId, true);
+                const memberCards = team.members.map(member => createCard(member, teamId)).join('');
+                contentHtml = `
+                    <div class="relative flex flex-col items-center">
+                        ${leadCard}
+                        ${team.members.length > 0 ? `
+                            <div class="mt-8 grid ${memberGridClass} gap-x-8 gap-y-12">
+                                ${memberCards}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                const memberCards = team.members.map(member => createCard(member, teamId, false)).join('');
+                 contentHtml = `
+                    <div class="relative flex flex-col items-center">
+                         <div class="grid ${memberGridClass} gap-x-8 gap-y-12">
+                                    ${memberCards}
+                         </div>
+                    </div>
+                `;
+            }
+            
+            const teamLegend = createLegend(team, teamId);
+
+            return `
+                <section id="${teamId}" class="team-section mb-16 p-8 bg-white shadow-md">
+                    ${descriptionHtml}
+                    ${contentHtml}
+                    ${teamLegend}
+                </section>
+            `;
+        }
+        
+        // Use the new teamOrder array to generate sections
+        teamOrder.forEach(teamId => {
+            container.innerHTML += createTeamSection(teamId);
+        });
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.dataset.target;
+                const targetSection = document.getElementById(targetId);
+                
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    setTimeout(() => {
+                        window.scrollBy(0, -100);
+                    }, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+�
